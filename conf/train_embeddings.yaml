@@ -1,0 +1,15 @@
+defaults:
+  - _self_
+  - data: mind_200k
+  - hydra: default
+
+  # optional local config for machine specific settings
+  - optional local: default
+
+tags: [dev]
+seed: 515
+epochs: 10
+embedding_dim: 100
+batch_size: 128
+learning_rate: 0.001
+n_negative_samples: 4

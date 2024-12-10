@@ -1,0 +1,9 @@
+# @package _global_
+defaults:
+  - /model: nrms
+  - /model_overrides: hierec
+
+features:
+  - title
+  - category
+  - subcategory

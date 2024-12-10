@@ -1,0 +1,27 @@
+defaults:
+  - _self_
+  - data: mind_200k
+  - lr_scheduler: linear_decay_with_warmup
+  - hydra: default
+  - seed: default
+
+  # optional local config for machine specific settings
+  - optional local: default
+
+tags: [dev]
+epochs: 5
+batch_size: 64
+negative_sampling_ratio: 4
+num_words_title: 20
+num_words_abstract: 50
+history_length: 50
+num_batches_show_loss: 100
+use_history_mask: true
+num_workers: 4
+enable_amp: true
+optimizer:
+  _target_: torch.optim.Adam
+  lr: 0.0002
+eval_splits:
+  - dev
+  - test
