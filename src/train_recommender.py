@@ -49,7 +49,7 @@ def main(cfg: DictConfig) -> None:
     random.seed(cfg.seed)
     torch.manual_seed(cfg.seed)
 
-    device_type = "cuda:4" if torch.cuda.is_available() else "cpu"
+    device_type = "cuda:0" if torch.cuda.is_available() else "cpu"
     device = torch.device(device_type)
 
     # Set up tokenizer
@@ -205,19 +205,19 @@ def main(cfg: DictConfig) -> None:
         )
         print("models beta", model.beta)
         # Evaluate
-        # for split in cfg.eval_splits:
-        #     metrics, probs = evaluate(
-        #         model, split, tokenizer, dataset.categorical_encoders, cfg
-        #     )
-        #     metrics["epoch"] = epoch_num
-        #     metrics_per_epoch[split].append(metrics)
-        #     probs.to_feather(f"probs_{epoch_num}_{split}.feather")
+        for split in cfg.eval_splits:
+            metrics, probs = evaluate(
+                model, split, tokenizer, dataset.categorical_encoders, cfg
+            )
+            metrics["epoch"] = epoch_num
+            metrics_per_epoch[split].append(metrics)
+            probs.to_feather(f"probs_{epoch_num}_{split}.feather")
 
-        #     tqdm.write(
-        #         f"({split}) "
-        #         + " | ".join(f"{metric}: {metrics[metric]:.5f}" for metric in metrics)
-        #     )
-        #     break
+            tqdm.write(
+                f"({split}) "
+                + " | ".join(f"{metric}: {metrics[metric]:.5f}" for metric in metrics)
+            )
+            break
 
         # Save model
         torch.save(

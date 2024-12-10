@@ -41,7 +41,7 @@ def evaluate(
     categorical_encoders: dict[str, CategoricalEncoder],
     cfg: DictConfig,
 ) -> tuple[dict[str, float], pd.DataFrame]:
-    device = torch.device("cuda:3" if torch.cuda.is_available() else "cpu")
+    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
     model.eval()
     tokenizer.eval()
