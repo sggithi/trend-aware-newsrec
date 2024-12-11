@@ -115,10 +115,8 @@ def evaluate(
 
                 probs = model.rank(impressions, user_repr).squeeze(0)
                 impressions = [int(impression_id[1:]) for impression_id in impression_ids[i]]
-                #print("before 63342", model.news_clicks[63342], model.news_impressions[63342])
                 model.update_ctr(answer[i], impressions)
               
-                #print("after 63342", model.news_clicks[63342], model.news_impressions[63342])
                 # LSTM을 통해 answer의 CTR 예측
                 ctr_predictions = []
                 for impression_id in impression_ids[i]:
@@ -127,38 +125,35 @@ def evaluate(
                     ctr_seq = torch.tensor(ctr_seq).unsqueeze(-1).to(model.device)
                     if len(ctr_seq) > 0:  # Ensure there's a sequence to process
                         ctr_sequence = ctr_seq.unsqueeze(0)  # Add batch dimension [1, seq_len, 1]
-                        ctr_predicted = model.ctr_predictor(ctr_sequence)  # LSTM 예측된 CTR
+                        ctr_predicted = model.ctr_predictor(ctr_sequence)  # LSTM CTR
                     else:
                         ctr_predicted = torch.zeros(1, 1).to(model.device)  # Default to 0 if no history
          
                     ctr_predictions.append(ctr_predicted)
                          
-            # 2시간마다 초기화 체크
+    
             if last_reset_time is None:
-                last_reset_time = current_time  # 첫 번째 시간 설정
+                last_reset_time = current_time 
             else:
-                time_diff = current_time - last_reset_time  # 이전 시간과의 차이 계산
+                time_diff = current_time - last_reset_time 
             
-                if time_diff >= time_interval:  # 2시간 이상 경과하면
-                    # 초기화 작업
+                if time_diff >= time_interval: 
                     combined_keys = set(model.news_impressions.keys()).union(model.news_ctr_history.keys())
-                    for impression in combined_keys:  # 모든 impression에 대해
+                    for impression in combined_keys: 
                         if isinstance(impression, torch.Tensor):
                             impression = impression.item()
                         if model.news_impressions[impression] == 0:
                             ctr = 0
                         else:
                             ctr = model.news_clicks[impression] / model.news_impressions[impression]
-                        # CTR 계산
-                    # 최대 history 길이를 유지하며 CTR 값을 추가
+               
                         if len(model.news_ctr_history[impression]) >= model.max_history_len:
-                            model.news_ctr_history[impression].pop(0)  # 최대 길이 유지
+                            model.news_ctr_history[impression].pop(0) 
                         model.news_ctr_history[impression].append(ctr) 
                   
                     model.news_clicks.clear()
                     model.news_impressions.clear()
 
-                    # 마지막 초기화 시간을 갱신
                     last_reset_time = current_time
 
                 ctr_predictions_tensor = torch.tensor(ctr_predictions).to(model.device)

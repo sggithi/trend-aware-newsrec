@@ -28,17 +28,14 @@ import torch.nn as nn
 class CTRPredictor(nn.Module):
     def __init__(self, input_size, hidden_size, num_layers):
         super(CTRPredictor, self).__init__()
-        # LSTM 층
         self.lstm = nn.LSTM(input_size, hidden_size, num_layers, batch_first=True)
-        # 최종 예측을 위한 선형 레이어
-        #self.lstm_decoder =  nn.LSTM(input_size, hidden_size, num_layers, batch_first=True)
         self.fc = nn.Linear(hidden_size, 1)
 
     def forward(self, x):
         # x: [batch_size, seq_len, input_size]
         lstm_out, _ = self.lstm(x.float())  # lstm_out: [batch_size, seq_len, hidden_size]
      
-        predictions = self.fc(lstm_out)  # 마지막 time step의 예측값
+        predictions = self.fc(lstm_out) 
         predicted_next_ctr = torch.sigmoid(predictions) 
         return predicted_next_ctr
 
@@ -108,14 +105,6 @@ def main(cfg: DictConfig) -> None:
 
     # Optionally load from checkpoint
     epochs = 0
-    path = "/home/users/jimin/news-recommendation_linear/outputs/lstm_4.pt"
-    print(f"Restoring from checkpoint {path}")
-    checkpoint = torch.load(path)
-    model.load_state_dict(checkpoint["model_state_dict"])
-    optimizer.load_state_dict(checkpoint["optimizer_state_dict"])
-    torch.set_rng_state(checkpoint["cpu_rng_state"])
-    torch.cuda.set_rng_state(checkpoint["gpu_rng_state"])
-    epochs = checkpoint["epochs"]
 
     scheduler = (
         hydra.utils.instantiate(
@@ -146,33 +135,33 @@ def main(cfg: DictConfig) -> None:
             model.update_ctr(answer.tolist(), candidates.tolist())
             
             if last_reset_time is None:
-                last_reset_time = current_time  # 첫 번째 시간 설정
+                last_reset_time = current_time  
             else:
-                time_diff = current_time - last_reset_time  # 이전 시간과의 차이 계산
+                time_diff = current_time - last_reset_time  
                 
-                if time_diff >= time_interval:  # 2시간 이상 경과하면
+                if time_diff >= time_interval:  
                     combined_keys = set(model.news_impressions.keys()).union(model.news_ctr_history.keys())
-                    for impression in combined_keys:  # 모든 impression에 대해
+                    for impression in combined_keys: 
                         if isinstance(impression, torch.Tensor):
                             impression = impression.item()
                         if model.news_impressions[impression] == 0:
                             ctr = 0
                         else:
                             ctr = model.news_clicks[impression] / model.news_impressions[impression]
-                        # 최대 history 길이를 유지하며 CTR 값을 추가
+              
                         if len(model.news_ctr_history[impression]) >= model.max_history_len:
-                            model.news_ctr_history[impression].pop(0)  # 최대 길이 유지
+                            model.news_ctr_history[impression].pop(0)  
                         if impression not in ctr_batch_num or ctr_batch_num[impression] != batch_num:
                             model.news_ctr_history[impression].append(ctr)
                             ctr_batch_num[impression] = batch_num
-                              # CTR 추가
+                        
                         else:
                             pass
                         
-                    model.news_clicks.clear()  # 클릭된 횟수 초기화
+                    model.news_clicks.clear() 
                     model.news_impressions.clear()  
 
-                    # 마지막 초기화 시간을 갱신
+
                     last_reset_time = current_time
 
             # update CTR

@@ -1,6 +1,6 @@
 # Personalized News Recommendation
 
-This repository contains PyTorch implementations of trend-aware news recommendation methods, created for Final project in DS535 class.
+This repository contains PyTorch implementations of trend-aware news recommendation methods, created for Final project in DS535 class. In this project, a dynamic CTR prediction model was integrated into NRMS to incorporate popularity into the click score for news recommendation. The time steps were divided into 2-hour intervals, and the CTR sequence from previous time steps was used to predict the CTR for the next time step. The CTR sequence is input into an LSTM, which outputs the predicted CTR score. This predicted CTR socre is then combined with the matching score based on semantic information using a weighted sum.
 
 
 
